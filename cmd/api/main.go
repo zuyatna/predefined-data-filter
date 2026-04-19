@@ -56,7 +56,22 @@ func main() {
 	// 4. Start HTTP Server
 	serverPort := ":8080"
 	log.Printf("Starting server on http://localhost%s\n", serverPort)
-	if err := http.ListenAndServe(serverPort, mux); err != nil {
+	if err := http.ListenAndServe(serverPort, enableCORS(mux)); err != nil {
 		log.Fatalf("Server failed to start: %v", err)
 	}
+}
+
+func enableCORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*") // Allow all origins for simplicity. In production, specify allowed origins.
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
 }
