@@ -4,8 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"strings"
+	"log"
 	"predefined-data-filter/internal/domain"
+	"strings"
+
 	"github.com/lib/pq"
 )
 
@@ -123,7 +125,12 @@ func (r *productRepository) Fetch(ctx context.Context, filter domain.ProductFilt
 	if err != nil {
 		return nil, 0, fmt.Errorf("error querying products: %w", err)
 	}
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			log.Fatalf("Failed to close rows: %v", err)
+		}
+	}(rows)
 
 	var products []domain.Product
 	var productIDs []int
@@ -146,7 +153,7 @@ func (r *productRepository) Fetch(ctx context.Context, filter domain.ProductFilt
 			p.Category.ID = int(catID.Int64)
 			p.Category.Name = catName.String
 		}
-		
+
 		p.Colors = []domain.Color{}
 		p.Labels = []domain.Label{}
 
@@ -191,7 +198,12 @@ func (r *productRepository) fetchColorsForProducts(ctx context.Context, productI
 	if err != nil {
 		return err
 	}
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			log.Fatalf("Failed to close rows: %v", err)
+		}
+	}(rows)
 
 	for rows.Next() {
 		var productID int
@@ -217,7 +229,12 @@ func (r *productRepository) fetchLabelsForProducts(ctx context.Context, productI
 	if err != nil {
 		return err
 	}
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			log.Fatalf("Failed to close rows: %v", err)
+		}
+	}(rows)
 
 	for rows.Next() {
 		var productID int

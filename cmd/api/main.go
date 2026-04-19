@@ -37,7 +37,12 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
-	defer db.Close()
+	defer func(db *sql.DB) {
+		err := db.Close()
+		if err != nil {
+			log.Fatalf("Failed to close database connection: %v", err)
+		}
+	}(db)
 	log.Println("Connected to database successfully")
 
 	// 2. Initialize Layers (Clean Architecture)
