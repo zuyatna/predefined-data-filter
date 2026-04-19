@@ -31,12 +31,18 @@ func (h *ProductHandler) FetchProducts(w http.ResponseWriter, r *http.Request) {
 	res, err := h.useCase.FetchProducts(r.Context(), filter)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		err := json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		if err != nil {
+			return
+		}
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(res)
+	err = json.NewEncoder(w).Encode(res)
+	if err != nil {
+		return
+	}
 }
 
 func buildFilterFromQuery(r *http.Request) domain.ProductFilter {
