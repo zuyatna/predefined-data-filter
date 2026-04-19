@@ -25,7 +25,7 @@ func NewProductHandler(mux *http.ServeMux, useCase domain.ProductUseCase) {
 
 func (h *ProductHandler) FetchProducts(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	
+
 	filter := buildFilterFromQuery(r)
 
 	res, err := h.useCase.FetchProducts(r.Context(), filter)
@@ -84,14 +84,16 @@ func buildFilterFromQuery(r *http.Request) domain.ProductFilter {
 		}
 	}
 
+	loc, _ := time.LoadLocation("Asia/Jakarta")
+
 	if start := query.Get("start_date"); start != "" {
-		if t, err := time.Parse("2006-01-02", start); err == nil {
+		if t, err := time.ParseInLocation("2006-01-02", start, loc); err == nil {
 			filter.StartDate = &t
 		}
 	}
 
 	if end := query.Get("end_date"); end != "" {
-		if t, err := time.Parse("2006-01-02", end); err == nil {
+		if t, err := time.ParseInLocation("2006-01-02", end, loc); err == nil {
 			// Add 23:59:59 to include the whole end day
 			t = t.Add(time.Hour*23 + time.Minute*59 + time.Second*59)
 			filter.EndDate = &t
